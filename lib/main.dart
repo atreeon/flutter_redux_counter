@@ -1,20 +1,27 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_redux/flutter_redux.dart';
 import 'package:redux/redux.dart';
+import 'package:redux_thunk/redux_thunk.dart';
 
 enum Actions { IncrementCounter, IncrementMultiplier, IncrementBoth }
 
+class IncrementCounterAction {
+  final int multiplier;
+
+  IncrementCounterAction(this.multiplier);
+}
+
 AppState appReducer(AppState state, action) {
   return new AppState(
-    count: counterReducer(state.count, state.multiplier, action),
+    count: counterReducer(state.count, action),
     multiplier: multiplierReducer(state.multiplier, action),
   );
 }
 
 //counter Reducer needs to get access to state.multiplier
-int counterReducer(int count, int multiplier, dynamic action) {
-  if (action == Actions.IncrementCounter) {
-    return (count + 1) + multiplier;
+int counterReducer(int count, dynamic action) {
+  if (action is IncrementCounterAction) {
+    return (count + 1) + action.multiplier;
   }
 
   return count;
@@ -28,9 +35,18 @@ int multiplierReducer(int state, dynamic action) {
   return state;
 }
 
+Function(Store<AppState>) incrementMultiplierAction = (Store<AppState> store) async {
+  store.dispatch(Actions.IncrementMultiplier);
+};
+
+Function(Store<AppState>) incrementCounterAction = (Store<AppState> store) async {
+  store.dispatch(new IncrementCounterAction(store.state.multiplier));
+};
+
+
 void main() {
-  final store =
-      new Store<AppState>(appReducer, initialState: new AppState(count: 0, multiplier: 0));
+  final store = new Store<AppState>(appReducer,
+      initialState: new AppState(count: 0, multiplier: 0), middleware: [thunkMiddleware]);
 
   runApp(new FlutterReduxApp(
     title: 'Flutter Redux Demo',
@@ -70,7 +86,7 @@ class FlutterReduxApp extends StatelessWidget {
                   converter: (store) {
                     // Return a `VoidCallback`, which is a fancy name for a function
                     // with no parameters. It only dispatches an Increment action.
-                    return () => store.dispatch(Actions.IncrementCounter);
+                    return () => store.dispatch(incrementCounterAction);
                   },
                   builder: (context, callback) {
                     return new RaisedButton(
@@ -80,11 +96,6 @@ class FlutterReduxApp extends StatelessWidget {
                     );
                   },
                 ),
-
-                // new RaisedButton(
-                //     child: new Text("Increase count"),
-                //     onPressed: () =>
-                //         StoreProvider.of<AppState>(context).dispatch(Actions.IncrementCounter)),
                 new Text(
                   'The count is:',
                 ),
@@ -101,7 +112,7 @@ class FlutterReduxApp extends StatelessWidget {
                   converter: (store) {
                     // Return a `VoidCallback`, which is a fancy name for a function
                     // with no parameters. It only dispatches an Increment action.
-                    return () => store.dispatch(Actions.IncrementMultiplier);
+                    return () => store.dispatch(incrementMultiplierAction);
                   },
                   builder: (context, callback) {
                     return new RaisedButton(
@@ -128,10 +139,10 @@ class FlutterReduxApp extends StatelessWidget {
                     // Return a `VoidCallback`, which is a fancy name for a function
                     // with no parameters. It only dispatches an Increment action.
                     return () {
-                      store.dispatch(Actions.IncrementMultiplier);
-                      store.dispatch(Actions.IncrementMultiplier);
-                      store.dispatch(Actions.IncrementMultiplier);
-                      store.dispatch(Actions.IncrementCounter);
+                      store.dispatch(incrementMultiplierAction);
+                      store.dispatch(incrementMultiplierAction);
+                      store.dispatch(incrementMultiplierAction);
+                      store.dispatch(incrementCounterAction);
                     };
                   },
                   builder: (context, callback) {
