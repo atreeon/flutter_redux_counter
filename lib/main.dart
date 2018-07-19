@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_redux/flutter_redux.dart';
 import 'package:redux/redux.dart';
@@ -36,13 +38,14 @@ int multiplierReducer(int state, dynamic action) {
 }
 
 Function(Store<AppState>) incrementMultiplierAction = (Store<AppState> store) async {
-  store.dispatch(Actions.IncrementMultiplier);
+  Future.delayed(const Duration(seconds: 2), () {
+    store.dispatch(Actions.IncrementMultiplier);
+  });
 };
 
 Function(Store<AppState>) incrementCounterAction = (Store<AppState> store) async {
   store.dispatch(new IncrementCounterAction(store.state.multiplier));
 };
-
 
 void main() {
   final store = new Store<AppState>(appReducer,
