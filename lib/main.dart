@@ -1,7 +1,7 @@
-import 'package:example/utils.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_redux/flutter_redux.dart';
 import 'package:redux/redux.dart';
+import 'package:flutter_redux_combine2/flutter_redux_combine2.dart';
 
 enum Actions { IncrementMultiplier, IncrementBoth }
 
@@ -148,7 +148,7 @@ class FlutterReduxApp extends StatelessWidget {
                       store.dispatch(Actions.IncrementMultiplier);
                       store.dispatch(Actions.IncrementMultiplier);
                       store.dispatch(Actions.IncrementMultiplier);
-                      store.dispatch(IncrementCounterAction);
+                      store.dispatch(new IncrementCounterMultipliedAction());
                     };
                   },
                   builder: (context, callback) {
