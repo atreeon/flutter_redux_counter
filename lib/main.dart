@@ -1,39 +1,20 @@
-import 'package:example/utils.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_redux/flutter_redux.dart';
 import 'package:redux/redux.dart';
 
-enum Actions { IncrementMultiplier, IncrementBoth }
-
-class IncrementCounterMultipliedAction {}
-
-class IncrementCounterAction {}
+enum Actions { IncrementCounter, IncrementMultiplier, IncrementBoth }
 
 AppState appReducer(AppState state, action) {
   return new AppState(
-    count: counterReducers(state.count, state.multiplier, action),
+    count: counterReducer(state.count, state.multiplier, action),
     multiplier: multiplierReducer(state.multiplier, action),
   );
 }
 
-final counterReducers = combineReducers2<int, int>([
-  new TypedReducer2<int, int, IncrementCounterMultipliedAction>(_incrementCounterMultipliedAction)
-], [
-  new TypedReducer<int, IncrementCounterAction>(_counterAction)
-]);
-
-int _incrementCounterMultipliedAction(
-    int count, int multiplier, IncrementCounterMultipliedAction action) {
-  if (action is IncrementCounterMultipliedAction) {
+//counter Reducer needs to get access to state.multiplier
+int counterReducer(int count, int multiplier, dynamic action) {
+  if (action == Actions.IncrementCounter) {
     return (count + 1) + multiplier;
-  }
-
-  return count;
-}
-
-int _counterAction(int count, dynamic action) {
-  if (action is IncrementCounterAction) {
-    return (count + 1);
   }
 
   return count;
@@ -87,26 +68,23 @@ class FlutterReduxApp extends StatelessWidget {
               children: [
                 new StoreConnector<AppState, VoidCallback>(
                   converter: (store) {
-                    return () => store.dispatch(new IncrementCounterAction());
+                    // Return a `VoidCallback`, which is a fancy name for a function
+                    // with no parameters. It only dispatches an Increment action.
+                    return () => store.dispatch(Actions.IncrementCounter);
                   },
                   builder: (context, callback) {
                     return new RaisedButton(
+                      // Attach the `callback` to the `onPressed` attribute
                       onPressed: callback,
                       child: new Text("Increase count"),
                     );
                   },
                 ),
-                new StoreConnector<AppState, VoidCallback>(
-                  converter: (store) {
-                    return () => store.dispatch(new IncrementCounterMultipliedAction());
-                  },
-                  builder: (context, callback) {
-                    return new RaisedButton(
-                      onPressed: callback,
-                      child: new Text("Increase Count with multiplier"),
-                    );
-                  },
-                ),
+
+                // new RaisedButton(
+                //     child: new Text("Increase count"),
+                //     onPressed: () =>
+                //         StoreProvider.of<AppState>(context).dispatch(Actions.IncrementCounter)),
                 new Text(
                   'The count is:',
                 ),
@@ -121,10 +99,13 @@ class FlutterReduxApp extends StatelessWidget {
                 ),
                 new StoreConnector<AppState, VoidCallback>(
                   converter: (store) {
+                    // Return a `VoidCallback`, which is a fancy name for a function
+                    // with no parameters. It only dispatches an Increment action.
                     return () => store.dispatch(Actions.IncrementMultiplier);
                   },
                   builder: (context, callback) {
                     return new RaisedButton(
+                      // Attach the `callback` to the `onPressed` attribute
                       onPressed: callback,
                       child: new Text("Increment multiplier"),
                     );
@@ -144,15 +125,18 @@ class FlutterReduxApp extends StatelessWidget {
                 ),
                 new StoreConnector<AppState, VoidCallback>(
                   converter: (store) {
+                    // Return a `VoidCallback`, which is a fancy name for a function
+                    // with no parameters. It only dispatches an Increment action.
                     return () {
                       store.dispatch(Actions.IncrementMultiplier);
                       store.dispatch(Actions.IncrementMultiplier);
                       store.dispatch(Actions.IncrementMultiplier);
-                      store.dispatch(IncrementCounterAction);
+                      store.dispatch(Actions.IncrementCounter);
                     };
                   },
                   builder: (context, callback) {
                     return new RaisedButton(
+                      // Attach the `callback` to the `onPressed` attribute
                       onPressed: callback,
                       child: new Text("Increment both"),
                     );
